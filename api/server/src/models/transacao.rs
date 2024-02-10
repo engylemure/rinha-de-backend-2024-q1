@@ -1,26 +1,18 @@
-use chrono::NaiveDateTime;
-use serde::{Deserialize, Serialize};
-use sqlx::{postgres::PgRow, FromRow, Row};
+use std::fmt;
 
-#[derive(Serialize)]
+use chrono::NaiveDateTime;
+use serde::{
+    de::{self, Unexpected},
+    Deserialize, Deserializer, Serialize,
+};
+use sqlx::FromRow;
+
+#[derive(Serialize, FromRow)]
 pub struct Transacao {
-    id: i32,
-    cliente_id: i32,
     tipo: TipoTransacao,
     descricao: String,
     realizada_em: NaiveDateTime,
-}
-
-impl FromRow<'_, PgRow> for Transacao {
-    fn from_row(row: &PgRow) -> Result<Self, sqlx::Error> {
-        Ok(Self {
-            id: row.try_get("id")?,
-            cliente_id: row.try_get("cliente_id")?,
-            tipo: row.try_get("tipo")?,
-            descricao: row.try_get("descricao")?,
-            realizada_em: row.try_get("realizada_em")?,
-        })
-    }
+    valor: i32
 }
 
 #[derive(Serialize, Deserialize, sqlx::Type)]
@@ -37,6 +29,35 @@ pub enum TipoTransacao {
 #[derive(Deserialize)]
 pub struct TransacaoInput {
     pub tipo: TipoTransacao,
+    #[serde(deserialize_with = "deserialize_descricao")]
     pub descricao: String,
     pub valor: u64,
+}
+
+struct DeserializeDescricao;
+
+impl<'de> de::Visitor<'de> for DeserializeDescricao {
+    type Value = String;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("string with minimum of 1 and maximum of 10 characters")
+    }
+
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        if v.len() >= 1 && v.len() <= 10 {
+            Ok(v.to_string())
+        } else {
+            Err(E::invalid_value(Unexpected::Str(v), &self))
+        }
+    }
+}
+
+fn deserialize_descricao<'de, D>(deserializer: D) -> Result<String, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    deserializer.deserialize_any(DeserializeDescricao)
 }

@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS transacoes (
 );
 CREATE FUNCTION updateClienteSaldoOnTransactionInsert() RETURNS trigger AS $updateClienteSaldoOnTransactionInsert$
     BEGIN 
+        LOCK TABLE clientes IN ROW EXCLUSIVE MODE;
+        PERFORM * FROM clientes WHERE clientes.id = NEW.cliente_id FOR UPDATE;
         IF NEW.tipo = 'd' THEN
             IF (SELECT c.saldo - NEW.valor < - c.limite from clientes c WHERE c.id = NEW.cliente_id) = TRUE THEN 
                 RAISE EXCEPTION 'Saldo e limite indisponivel para realizar transacao';

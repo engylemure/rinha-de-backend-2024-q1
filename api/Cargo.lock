@@ -1927,6 +1927,7 @@ dependencies = [
  "chrono",
  "dotenv",
  "init-tracing-opentelemetry",
+ "mime",
  "opentelemetry 0.20.0",
  "opentelemetry-otlp",
  "serde",
