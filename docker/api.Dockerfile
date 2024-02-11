@@ -1,4 +1,4 @@
-FROM rust:1.75-alpine3.18
+FROM rust:1.76
 
 # Dockerize setup
 ENV DOCKERIZE_VERSION v0.6.1
@@ -7,7 +7,7 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
     && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
     
 # Adding system dependencies
-RUN apk --no-cache add libpq libaio libstdc++ libc6-compat  musl musl-dev
+RUN apt update && apt install --no-install-recommends -y libpq-dev build-essential cmake && rm -rf /var/lib/apt/lists/*
 
 # Setting up working directory
 ENV HOME=/opt/app

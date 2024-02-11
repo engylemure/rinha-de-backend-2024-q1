@@ -42,7 +42,7 @@ pub async fn create(
     app_state: web::Data<AppState>,
 ) -> impl Responder {
     let input = input.into_inner();
-    match apply_transaction(cliente_id.into_inner() as i32, input.into(), &app_state).await {
+    match apply_transaction(cliente_id.into_inner() as i32, input, &app_state).await {
         Ok(new_saldo) => HttpResponse::Ok().json(new_saldo),
         Err(err) => match err {
             sqlx::Error::RowNotFound => HttpResponse::NotFound().finish(),

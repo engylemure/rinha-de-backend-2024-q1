@@ -16,7 +16,6 @@ use tracing_actix_web::TracingLogger;
 pub async fn server() -> Result<(), Box<dyn std::error::Error>> {
     let env_values = Arc::new(EnvironmentValues::init());
     match env_values.logger {
-        Some(LoggerOutput::Otel) => telemetry::init_otel(),
         Some(LoggerOutput::Stdout) => telemetry::init(),
         _ => (),
     }

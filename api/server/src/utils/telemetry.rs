@@ -8,8 +8,3 @@ pub fn init() {
         .with(EnvFilter::from_default_env())
         .init();
 }
-
-pub fn init_otel() {
-    init_tracing_opentelemetry::tracing_subscriber_ext::init_subscribers()
-        .expect("init subscribers");
-}
