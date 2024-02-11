@@ -2,11 +2,10 @@ use dotenv::dotenv;
 use std::{env, str::FromStr};
 
 pub struct EnvironmentValues {
-    pub redis_url: String,
+    pub server_host: String,
     pub server_port: u16,
     pub rust_env: String,
     pub logger: Option<LoggerOutput>,
-    pub rinha_url: String,
     pub db_pool_max_size: u32,
     pub database_url: String,
     pub db_host: String,
@@ -36,7 +35,7 @@ impl EnvironmentValues {
     pub fn init() -> Self {
         dotenv().ok();
         Self {
-            redis_url: env::var("REDIS_URL").expect("REDIS_URL must be set"),
+            server_host: env::var("SERVER_HOST").unwrap_or("[::]".into()),
             server_port: env::var("SERVER_PORT")
                 .unwrap_or_else(|_| String::from("80"))
                 .parse()
@@ -45,9 +44,6 @@ impl EnvironmentValues {
             logger: std::env::var("LOGGER_OUTPUT")
                 .ok()
                 .and_then(|s| s.parse().ok()),
-            rinha_url: std::env::var("RINHA_URL")
-                .ok()
-                .unwrap_or(String::from("http://[::]:50051")),
 
             database_url: env::var("DATABASE_URL").expect("DATABASE_URL must be set"),
 

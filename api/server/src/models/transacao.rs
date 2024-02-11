@@ -31,7 +31,7 @@ pub struct TransacaoInput {
     pub tipo: TipoTransacao,
     #[serde(deserialize_with = "deserialize_descricao")]
     pub descricao: String,
-    pub valor: u64,
+    pub valor: u32,
 }
 
 struct DeserializeDescricao;
