@@ -77,29 +77,30 @@ async fn get_extrato(
     cliente_id: i32,
     app_state: web::Data<AppState>,
 ) -> Result<Extrato, sqlx::error::Error> {
-    Extrato::try_from(
+    Extrato::try_from({
+        let conn = app_state.pool.acquire().await?;
         sqlx::query_as::<_, SaldoETransacao>(
             r#"
-            SELECT
-                clientes.saldo as total,
-                clientes.limite as limite,
-                transacoes.tipo as tipo,
-                transacoes.descricao as descricao,
-                transacoes.realizada_em as realizada_em,
-                transacoes.valor as valor
-            FROM 
-                clientes
-            LEFT JOIN 
-                transacoes ON transacoes.cliente_id = clientes.id
-            WHERE 
-                clientes.id = $1
-            ORDER BY transacoes.realizada_em DESC LIMIT 10
-        "#,
+                SELECT
+                    clientes.saldo as total,
+                    clientes.limite as limite,
+                    transacoes.tipo as tipo,
+                    transacoes.descricao as descricao,
+                    transacoes.realizada_em as realizada_em,
+                    transacoes.valor as valor
+                FROM 
+                    clientes
+                LEFT JOIN 
+                    transacoes ON transacoes.cliente_id = clientes.id
+                WHERE 
+                    clientes.id = $1
+                ORDER BY transacoes.realizada_em DESC LIMIT 10
+            "#,
         )
         .bind(cliente_id)
-        .fetch_all(&mut *app_state.pool.acquire().await?)
-        .await?,
-    )
+        .fetch_all(&mut *conn)
+        .await?
+    })
 }
 
 #[actix_web::get("/extrato")]
