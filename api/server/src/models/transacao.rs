@@ -9,10 +9,10 @@ use sqlx::FromRow;
 
 #[derive(Serialize, FromRow)]
 pub struct Transacao {
-    tipo: TipoTransacao,
-    descricao: String,
-    realizada_em: NaiveDateTime,
-    valor: i32
+    pub tipo: TipoTransacao,
+    pub descricao: String,
+    pub realizada_em: NaiveDateTime,
+    pub valor: i32
 }
 
 #[derive(Serialize, Deserialize, sqlx::Type)]
