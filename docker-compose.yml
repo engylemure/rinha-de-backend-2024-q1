@@ -2,10 +2,11 @@ version: '3.5'
 services:
   api1: &api
     # API - Instância 01
-    #    image: api
-    build: 
-      dockerfile: ./docker/api.Dockerfile
-      context: ./
+    image: engylemure/rinha-de-backend-2024-q1
+    # Local development
+    # build: 
+    #   dockerfile: ./docker/api.Dockerfile
+    #   context: ./
     hostname: api01
     depends_on:
       - db
@@ -21,8 +22,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
-          memory: '0.075GB'
+          cpus: '0.20'
+          memory: '0.05GB'
   api2:
     # API - Instancia 02
     <<: *api
@@ -41,7 +42,7 @@ services:
       resources:
         limits:
           cpus: '0.25'
-          memory: '0.1GB'
+          memory: '0.125GB'
   db:
     # Banco de dados
     image: postgres:15.4-alpine3.18
@@ -59,8 +60,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.75'
-          memory: '0.25GB'
+          cpus: '0.85'
+          memory: '0.275GB'
 networks:
   default:
     driver: bridge
