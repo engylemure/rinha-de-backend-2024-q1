@@ -47,7 +47,7 @@ impl<'de> de::Visitor<'de> for DeserializeDescricao {
     where
         E: de::Error,
     {
-        if v.len() >= 1 && v.len() <= 10 {
+        if !v.is_empty() && v.len() <= 10 {
             Ok(v.to_string())
         } else {
             Err(E::invalid_value(Unexpected::Str(v), &self))

@@ -45,13 +45,10 @@ async fn get_extrato(
 pub async fn extrato(cliente_id: web::Path<u32>, app_state: web::Data<AppState>) -> impl Responder {
     match get_extrato(cliente_id.into_inner() as i32, app_state).await {
         Ok(extrato) => HttpResponse::Ok().json(extrato),
-        Err(err) => {
-            dbg!(&err);
-            match err {
-                sqlx::Error::RowNotFound => HttpResponse::NotFound().finish(),
-                _ => HttpResponse::InternalServerError().finish(),
-            }
-        }
+        Err(err) => match err {
+            sqlx::Error::RowNotFound => HttpResponse::NotFound().finish(),
+            _ => HttpResponse::InternalServerError().finish(),
+        },
     }
 }
 

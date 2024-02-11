@@ -11,3 +11,4 @@ members = [".", "server"]
 [dependencies]
 server = { path = "server" }
 actix-web = "4"
+snmalloc-rs = "0.3.4"

@@ -44,8 +44,7 @@ impl EnvironmentValues {
             rust_env: env::var("RUST_ENV").unwrap_or_else(|_| "dev".into()),
             logger: std::env::var("LOGGER_OUTPUT")
                 .ok()
-                .map(|s| s.parse().ok())
-                .flatten(),
+                .and_then(|s| s.parse().ok()),
             rinha_url: std::env::var("RINHA_URL")
                 .ok()
                 .unwrap_or(String::from("http://[::]:50051")),
