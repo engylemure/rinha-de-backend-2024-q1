@@ -9,97 +9,39 @@ use chrono::{DateTime, NaiveDateTime, Utc};
 use serde::Serialize;
 use sqlx::FromRow;
 
-#[derive(Serialize)]
+#[derive(Serialize, FromRow)]
 struct Saldo {
     total: i32,
     data_extrato: DateTime<Utc>,
     limite: i32,
 }
 
-impl Default for Saldo {
-    fn default() -> Self {
-        Self {
-            total: Default::default(),
-            data_extrato: Utc::now(),
-            limite: Default::default(),
-        }
-    }
-}
-
-#[derive(Serialize, Default)]
+#[derive(Serialize)]
 struct Extrato {
     saldo: Saldo,
     ultimas_transacoes: Vec<Transacao>,
-}
-
-#[derive(Serialize, FromRow)]
-struct SaldoETransacao {
-    total: i32,
-    limite: i32,
-    tipo: Option<TipoTransacao>,
-    descricao: Option<String>,
-    realizada_em: Option<NaiveDateTime>,
-    valor: Option<i32>,
-}
-
-impl TryFrom<Vec<SaldoETransacao>> for Extrato {
-    type Error = sqlx::error::Error;
-
-    fn try_from(value: Vec<SaldoETransacao>) -> Result<Self, Self::Error> {
-        if value.is_empty() {
-            Err(sqlx::error::Error::RowNotFound)
-        } else {
-            Ok(value
-                .into_iter()
-                .fold(Extrato::default(), |mut acc, saldo_e_transacao| {
-                    acc.saldo.limite = saldo_e_transacao.limite;
-                    acc.saldo.total = saldo_e_transacao.total;
-                    if let (Some(tipo), Some(descricao), Some(realizada_em), Some(valor)) = (
-                        saldo_e_transacao.tipo,
-                        saldo_e_transacao.descricao,
-                        saldo_e_transacao.realizada_em,
-                        saldo_e_transacao.valor,
-                    ) {
-                        acc.ultimas_transacoes.push(Transacao {
-                            tipo,
-                            descricao,
-                            realizada_em,
-                            valor,
-                        })
-                    }
-                    acc
-                }))
-        }
-    }
 }
 
 async fn get_extrato(
     cliente_id: i32,
     app_state: web::Data<AppState>,
 ) -> Result<Extrato, sqlx::error::Error> {
-    Extrato::try_from({
-        let conn = app_state.pool.acquire().await?;
-        sqlx::query_as::<_, SaldoETransacao>(
-            r#"
-                SELECT
-                    clientes.saldo as total,
-                    clientes.limite as limite,
-                    transacoes.tipo as tipo,
-                    transacoes.descricao as descricao,
-                    transacoes.realizada_em as realizada_em,
-                    transacoes.valor as valor
-                FROM 
-                    clientes
-                LEFT JOIN 
-                    transacoes ON transacoes.cliente_id = clientes.id
-                WHERE 
-                    clientes.id = $1
-                ORDER BY transacoes.realizada_em DESC LIMIT 10
-            "#,
-        )
-        .bind(cliente_id)
-        .fetch_all(&mut *conn)
-        .await?
+    let mut trx = app_state.pool.begin().await?;
+    let saldo = sqlx::query_as::<_, Saldo>(
+        "SELECT saldo as total, limite, NOW() as data_extrato FROM clientes WHERE clientes.id = $1",
+    )
+    .bind(cliente_id)
+    .fetch_one(&mut *trx)
+    .await?;
+    let ultimas_transacoes = sqlx::query_as::<_, Transacao>(
+        "SELECT tipo, descricao, realizada_em, valor FROM transacoes WHERE cliente_id = $1 ORDER BY realizada_em DESC LIMIT 10",
+    )
+    .bind(cliente_id)
+    .fetch_all(&mut *trx)
+    .await?;
+    Ok(Extrato {
+        saldo,
+        ultimas_transacoes,
     })
 }
 
