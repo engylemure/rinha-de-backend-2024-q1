@@ -1,6 +1,7 @@
 use dotenv::dotenv;
 use std::{env, str::FromStr};
 
+#[derive(Debug)]
 pub struct EnvironmentValues {
     pub server_host: String,
     pub server_port: u16,
@@ -14,6 +15,7 @@ pub struct EnvironmentValues {
     pub db_user: String,
 }
 
+#[derive(Debug)]
 pub enum LoggerOutput {
     Otel,
     Stdout,
@@ -33,7 +35,9 @@ impl FromStr for LoggerOutput {
 
 impl EnvironmentValues {
     pub fn init() -> Self {
-        dotenv().ok();
+        if let Err(err) = dotenv() {
+            println!("dotenv() error: {:?}", err);
+        }
         Self {
             server_host: env::var("SERVER_HOST").unwrap_or("0.0.0.0".into()),
             server_port: env::var("SERVER_PORT")
@@ -44,7 +48,6 @@ impl EnvironmentValues {
             logger: std::env::var("LOGGER_OUTPUT")
                 .ok()
                 .and_then(|s| s.parse().ok()),
-
             database_url: env::var("DATABASE_URL").expect("DATABASE_URL must be set"),
 
             db_pool_max_size: std::env::var("DATABASE_POOL_MAX_SIZE")

@@ -18,7 +18,7 @@ pub async fn server() -> Result<(), Box<dyn std::error::Error>> {
     match env_values.logger {
         Some(LoggerOutput::Stdout) => telemetry::init(),
         _ => (),
-    }
+    };
     let app_state = AppState::from(&env_values).await?;
     let socket: SocketAddr =
         format!("{}:{}", env_values.server_host, env_values.server_port).parse()?;
