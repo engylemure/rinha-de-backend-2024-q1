@@ -8,6 +8,7 @@ pub struct EnvironmentValues {
     pub rust_env: String,
     pub logger: Option<LoggerOutput>,
     pub db_pool_max_size: u32,
+    pub db_pool_min_size: Option<u32>,
     pub database_url: String,
     pub db_host: String,
     pub db_password: String,
@@ -55,7 +56,10 @@ impl EnvironmentValues {
                 .ok()
                 .flatten()
                 .unwrap_or(256),
-
+            db_pool_min_size: std::env::var("DATABASE_POOL_MIN_SIZE")
+                .map(|s| s.parse().ok())
+                .ok()
+                .flatten(),
             db_host: std::env::var("DB_HOST").expect("DB_HOST must be set"),
 
             db_user: std::env::var("DB_USER").expect("DB_USER must be set"),
