@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS transacoes (
     tipo tipoTransacao NOT NULL,
     valor INTEGER NOT NULL,
     descricao VARCHAR(1024),
-    realizada_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    realizada_em TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX CONCURRENTLY transacoes_realizada_em_idx ON transacoes(cliente_id, realizada_em DESC);
 CREATE FUNCTION updateClienteSaldoOnTransactionInsert() RETURNS trigger AS $updateClienteSaldoOnTransactionInsert$

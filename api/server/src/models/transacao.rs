@@ -1,6 +1,6 @@
 use std::fmt;
 
-use chrono::NaiveDateTime;
+use chrono::{DateTime, Utc};
 use serde::{
     de::{self, Unexpected},
     Deserialize, Deserializer, Serialize,
@@ -11,7 +11,7 @@ use sqlx::FromRow;
 pub struct Transacao {
     pub tipo: TipoTransacao,
     pub descricao: String,
-    pub realizada_em: NaiveDateTime,
+    pub realizada_em: DateTime<Utc>,
     pub valor: i32,
 }
 
