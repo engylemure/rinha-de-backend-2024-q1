@@ -15,3 +15,5 @@ build-image:
 
 push-image:
 	docker push engylemure/rinha-de-backend-2024-q1
+
+build-and-push-image: build-image push-image
