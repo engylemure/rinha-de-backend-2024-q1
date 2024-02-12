@@ -20,7 +20,8 @@ pub async fn server() -> Result<(), Box<dyn std::error::Error>> {
         _ => (),
     }
     let app_state = AppState::from(&env_values).await?;
-    let socket: SocketAddr = format!("{}:{}", env_values.server_host, env_values.server_port).parse()?;
+    let socket: SocketAddr =
+        format!("{}:{}", env_values.server_host, env_values.server_port).parse()?;
     tracing::info!("Starting App Server at: {}", socket);
     let app_state = web::Data::new(app_state);
     let json_config =

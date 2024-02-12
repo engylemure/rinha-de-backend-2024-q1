@@ -35,7 +35,7 @@ impl EnvironmentValues {
     pub fn init() -> Self {
         dotenv().ok();
         Self {
-            server_host: env::var("SERVER_HOST").unwrap_or("[::]".into()),
+            server_host: env::var("SERVER_HOST").unwrap_or("0.0.0.0".into()),
             server_port: env::var("SERVER_PORT")
                 .unwrap_or_else(|_| String::from("80"))
                 .parse()

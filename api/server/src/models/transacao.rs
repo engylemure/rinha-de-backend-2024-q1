@@ -12,7 +12,7 @@ pub struct Transacao {
     pub tipo: TipoTransacao,
     pub descricao: String,
     pub realizada_em: NaiveDateTime,
-    pub valor: i32
+    pub valor: i32,
 }
 
 #[derive(Serialize, Deserialize, sqlx::Type)]

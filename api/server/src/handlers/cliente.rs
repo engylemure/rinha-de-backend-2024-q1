@@ -1,11 +1,7 @@
-use crate::{
-    handlers::transacao,
-    models::transacao::{TipoTransacao, Transacao},
-    utils::app_state::AppState,
-};
+use crate::{handlers::transacao, models::transacao::Transacao, utils::app_state::AppState};
 
 use actix_web::{web, HttpResponse, Responder};
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::{DateTime, Utc};
 use serde::Serialize;
 use sqlx::FromRow;
 
