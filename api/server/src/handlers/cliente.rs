@@ -24,13 +24,27 @@ async fn get_extrato(
 ) -> Result<Extrato, sqlx::error::Error> {
     let mut trx = app_state.pool.begin().await?;
     let saldo = sqlx::query_as::<_, Saldo>(
-        "SELECT saldo as total, limite, NOW() as data_extrato FROM clientes WHERE clientes.id = $1",
+        r#"
+        SELECT
+            saldo as total, limite, NOW() as data_extrato
+        FROM
+            clientes
+        WHERE
+            clientes.id = $1
+        "#,
     )
     .bind(cliente_id)
     .fetch_one(&mut *trx)
     .await?;
     let ultimas_transacoes = sqlx::query_as::<_, Transacao>(
-        "SELECT tipo, descricao, realizada_em, valor FROM transacoes WHERE cliente_id = $1 ORDER BY realizada_em DESC LIMIT 10",
+        r#"
+            SELECT
+                tipo, descricao, realizada_em, valor
+            FROM 
+                transacoes
+            WHERE
+                cliente_id = $1 ORDER BY realizada_em DESC LIMIT 10
+        "#,
     )
     .bind(cliente_id)
     .fetch_all(&mut *trx)

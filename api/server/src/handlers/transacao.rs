@@ -26,7 +26,14 @@ pub async fn apply_transaction(
     .execute(&mut *db_trx)
     .await?;
     let new_saldo = sqlx::query_as::<_, NewSaldo>(
-        "SELECT saldo, limite FROM clientes WHERE clientes.id = $1 LIMIT 1;",
+        r#"
+        SELECT
+            saldo, limite
+        FROM
+            clientes
+        WHERE
+            clientes.id = $1 LIMIT 1;
+    "#,
     )
     .bind(cliente_id)
     .fetch_one(&mut *db_trx)
