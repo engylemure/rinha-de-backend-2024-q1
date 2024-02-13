@@ -15,10 +15,9 @@ use tracing_actix_web::TracingLogger;
 
 pub async fn server() -> Result<(), Box<dyn std::error::Error>> {
     let env_values = Arc::new(EnvironmentValues::init());
-    match env_values.logger {
-        Some(LoggerOutput::Stdout) => telemetry::init(),
-        _ => (),
-    };
+    if let Some(LoggerOutput::Stdout) = env_values.logger {
+        telemetry::init()
+    }
     let app_state = AppState::from(&env_values).await?;
     let socket: SocketAddr =
         format!("{}:{}", env_values.server_host, env_values.server_port).parse()?;
@@ -49,7 +48,7 @@ pub async fn server() -> Result<(), Box<dyn std::error::Error>> {
                 .wrap(Cors::permissive())
                 .configure(cliente::config)
         })
-        .keep_alive(Duration::from_secs(200))
+        .keep_alive(Duration::from_secs(env_values.keep_alive))
         .bind(&socket)?
         .run()
         .await?;
@@ -62,7 +61,7 @@ pub async fn server() -> Result<(), Box<dyn std::error::Error>> {
                 .wrap(TracingLogger::default())
                 .configure(cliente::config)
         })
-        .keep_alive(Duration::from_secs(200))
+        .keep_alive(Duration::from_secs(env_values.keep_alive))
         .bind(&socket)?
         .run()
         .await?;

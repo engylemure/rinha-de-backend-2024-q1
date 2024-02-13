@@ -5,6 +5,7 @@ use std::{env, str::FromStr};
 pub struct EnvironmentValues {
     pub server_host: String,
     pub server_port: u16,
+    pub keep_alive: u64,
     pub rust_env: String,
     pub logger: Option<LoggerOutput>,
     pub db_pool_max_size: u32,
@@ -67,6 +68,11 @@ impl EnvironmentValues {
             db_password: std::env::var("DB_PASSWORD").expect("DB_PASSWORD must be set"),
 
             db_name: std::env::var("DB_NAME").expect("DB_NAME must be set"),
+            keep_alive: std::env::var("KEEP_ALIVE")
+                .map(|s| s.parse().ok())
+                .ok()
+                .flatten()
+                .unwrap_or(300),
         }
     }
 }
