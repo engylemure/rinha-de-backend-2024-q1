@@ -19,7 +19,7 @@ impl AppState {
                     .db_pool_min_size
                     .unwrap_or(env_values.db_pool_max_size / 16),
             )
-            .acquire_timeout(Duration::new(4, 0))
+            .acquire_timeout(Duration::new(10, 0))
             .connect(&env_values.database_url)
             .instrument(tracing::info_span!("database connection"))
             .await?;
