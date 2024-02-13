@@ -1,13 +1,14 @@
 use std::fmt;
 
+use bb8_postgres::tokio_postgres::Row;
 use chrono::{DateTime, Utc};
+use postgres_types::{FromSql, ToSql};
 use serde::{
     de::{self, Unexpected},
     Deserialize, Deserializer, Serialize,
 };
-use sqlx::FromRow;
 
-#[derive(Serialize, FromRow)]
+#[derive(Serialize)]
 pub struct Transacao {
     pub tipo: TipoTransacao,
     pub descricao: String,
@@ -15,14 +16,27 @@ pub struct Transacao {
     pub valor: i32,
 }
 
-#[derive(Serialize, Deserialize, sqlx::Type)]
-#[sqlx(type_name = "tipoTransacao")]
+impl TryFrom<Row> for Transacao {
+    type Error = bb8_postgres::tokio_postgres::Error;
+
+    fn try_from(value: Row) -> Result<Self, Self::Error> {
+        Ok(Self {
+            tipo: value.try_get("tipo")?,
+            descricao: value.try_get("descricao")?,
+            realizada_em: value.try_get("realizada_em")?,
+            valor: value.try_get("valor")?,
+        })
+    }
+}
+
+#[derive(Serialize, Deserialize, ToSql, FromSql, Debug)]
+#[postgres(name = "tipo_transacao")]
 pub enum TipoTransacao {
+    #[postgres(name = "c")]
     #[serde(rename = "c")]
-    #[sqlx(rename = "c")]
     Credito,
-    #[sqlx(rename = "d")]
     #[serde(rename = "d")]
+    #[postgres(name = "d")]
     Debito,
 }
 

@@ -9,10 +9,7 @@ default = []
 
 [dependencies]
 actix-web = "4"
-tracing-subscriber = { version = "0.3", features = [
-    "registry",
-    "env-filter",
-] }
+tracing-subscriber = { version = "0.3", features = ["registry", "env-filter"] }
 tracing = "0.1"
 tracing-actix-web = { version = "0.7", features = [
     "opentelemetry_0_19",
@@ -31,5 +28,8 @@ init-tracing-opentelemetry = { version = "0.13", features = [
     "tracing_subscriber_ext",
 ] }
 uuid = { version = "1.4", features = ["v4", "fast-rng", "serde"] }
-sqlx = { version = "0.7", features = ["runtime-tokio", "postgres", "chrono"] }
 mime = "0.3.17"
+bb8-postgres = { version = "0.8.1", features = ["with-chrono-0_4"] }
+bb8 = "0.8.3"
+futures-util = "0.3.30"
+postgres-types = { version = "0.2.6", features = ["derive"] }

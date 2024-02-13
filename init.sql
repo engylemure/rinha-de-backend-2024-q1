@@ -4,11 +4,11 @@ CREATE TABLE IF NOT EXISTS clientes (
     nome VARCHAR(256),
     saldo INTEGER NOT NULL DEFAULT 0
 );
-CREATE TYPE tipoTransacao as ENUM ('c', 'd');
+CREATE TYPE tipo_transacao as ENUM ('c', 'd');
 CREATE TABLE IF NOT EXISTS transacoes (
     id SERIAL PRIMARY KEY,
     cliente_id INTEGER NOT NULL REFERENCES clientes(id),
-    tipo tipoTransacao NOT NULL,
+    tipo tipo_transacao NOT NULL,
     valor INTEGER NOT NULL,
     descricao VARCHAR(1024),
     realizada_em TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
