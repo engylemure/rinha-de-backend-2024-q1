@@ -1,3 +1,4 @@
+-- Database Schema
 CREATE TABLE IF NOT EXISTS clientes (
     id SERIAL PRIMARY KEY,
     limite INTEGER NOT NULL,
@@ -14,29 +15,8 @@ CREATE TABLE IF NOT EXISTS transacoes (
     realizada_em TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX CONCURRENTLY transacoes_realizada_em_idx ON transacoes(cliente_id, realizada_em DESC);
-CREATE FUNCTION updateClienteSaldoOnTransactionInsert() RETURNS trigger AS $updateClienteSaldoOnTransactionInsert$
-    BEGIN 
-        LOCK TABLE clientes IN ROW EXCLUSIVE MODE;
-        PERFORM * FROM clientes WHERE clientes.id = NEW.cliente_id FOR UPDATE;
-        IF NEW.tipo = 'd' THEN
-            IF (SELECT c.saldo - NEW.valor < - c.limite from clientes c WHERE c.id = NEW.cliente_id) = TRUE THEN 
-                RAISE EXCEPTION 'Saldo e limite indisponivel para realizar transacao';
-            ELSE  UPDATE clientes SET saldo = saldo - NEW.valor WHERE id = NEW.cliente_id;
-            END IF;
-        END IF;
-        IF NEW.tipo = 'c' THEN
-            UPDATE 
-                clientes
-            SET 
-                saldo = saldo + NEW.valor
-            WHERE id = NEW.cliente_id;
-        END IF;
-        RETURN NEW;
-END;
-$updateClienteSaldoOnTransactionInsert$ LANGUAGE plpgsql;
-CREATE TRIGGER updateClienteSaldoOnTransactionInsert BEFORE
-INSERT ON transacoes FOR EACH ROW EXECUTE FUNCTION updateClienteSaldoOnTransactionInsert();
 
+-- Initial Data
 INSERT INTO clientes (nome, limite)
 VALUES
 ('o barato sai caro', 1000 * 100),
