@@ -15,6 +15,7 @@ pub struct EnvironmentValues {
     pub db_password: String,
     pub db_name: String,
     pub db_user: String,
+    pub workers_amount: usize,
 }
 
 #[derive(Debug)]
@@ -73,6 +74,16 @@ impl EnvironmentValues {
                 .ok()
                 .flatten()
                 .unwrap_or(300),
+            workers_amount: std::env::var("WORKERS_AMOUNT")
+                .map(|s| s.parse().ok())
+                .ok()
+                .flatten()
+                .unwrap_or(
+                    std::thread::available_parallelism()
+                        .ok()
+                        .map(|val| val.get())
+                        .unwrap_or(1),
+                ),
         }
     }
 }

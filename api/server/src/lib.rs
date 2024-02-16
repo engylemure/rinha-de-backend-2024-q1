@@ -50,6 +50,7 @@ pub async fn server() -> Result<(), Box<dyn std::error::Error>> {
         })
         .keep_alive(Duration::from_secs(env_values.keep_alive))
         .bind(&socket)?
+        .workers(env_values.workers_amount)
         .run()
         .await?;
     } else {
@@ -63,6 +64,7 @@ pub async fn server() -> Result<(), Box<dyn std::error::Error>> {
         })
         .keep_alive(Duration::from_secs(env_values.keep_alive))
         .bind(&socket)?
+        .workers(env_values.workers_amount)
         .run()
         .await?;
     }
