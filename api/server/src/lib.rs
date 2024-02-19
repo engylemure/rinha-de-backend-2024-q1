@@ -13,7 +13,7 @@ use std::time::Duration;
 use std::{net::SocketAddr, sync::Arc};
 use tracing_actix_web::TracingLogger;
 
-pub async fn server() -> Result<(), Box<dyn std::error::Error>> {
+pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let env_values = Arc::new(EnvironmentValues::init());
     if let Some(LoggerOutput::Stdout) = env_values.logger {
         telemetry::init()

@@ -16,7 +16,7 @@ pub struct Transacao {
 }
 
 #[derive(Serialize, Deserialize, sqlx::Type)]
-#[sqlx(type_name = "tipoTransacao")]
+#[sqlx(type_name = "TIPO_TRANSACAO")]
 pub enum TipoTransacao {
     #[serde(rename = "c")]
     #[sqlx(rename = "c")]
@@ -31,7 +31,7 @@ pub struct TransacaoInput {
     pub tipo: TipoTransacao,
     #[serde(deserialize_with = "deserialize_descricao")]
     pub descricao: String,
-    pub valor: u32,
+    pub valor: i32,
 }
 
 struct DeserializeDescricao;

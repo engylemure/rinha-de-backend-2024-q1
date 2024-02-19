@@ -1,41 +1,19 @@
-CREATE TABLE IF NOT EXISTS clientes (
+CREATE UNLOGGED TABLE IF NOT EXISTS clientes (
     id SERIAL PRIMARY KEY,
     limite INTEGER NOT NULL,
-    nome VARCHAR(256),
+    nome VARCHAR(100),
     saldo INTEGER NOT NULL DEFAULT 0
 );
-CREATE TYPE tipoTransacao as ENUM ('c', 'd');
-CREATE TABLE IF NOT EXISTS transacoes (
+CREATE TYPE TIPO_TRANSACAO as ENUM ('c', 'd');
+CREATE UNLOGGED TABLE IF NOT EXISTS transacoes (
     id SERIAL PRIMARY KEY,
     cliente_id INTEGER NOT NULL REFERENCES clientes(id),
-    tipo tipoTransacao NOT NULL,
+    tipo TIPO_TRANSACAO NOT NULL,
     valor INTEGER NOT NULL,
-    descricao VARCHAR(1024),
+    descricao VARCHAR(25),
     realizada_em TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX CONCURRENTLY transacoes_realizada_em_idx ON transacoes(cliente_id, realizada_em DESC);
-CREATE FUNCTION updateClienteSaldoOnTransactionInsert() RETURNS trigger AS $updateClienteSaldoOnTransactionInsert$
-    BEGIN 
-        LOCK TABLE clientes IN ROW EXCLUSIVE MODE;
-        PERFORM * FROM clientes WHERE clientes.id = NEW.cliente_id FOR UPDATE;
-        IF NEW.tipo = 'd' THEN
-            IF (SELECT c.saldo - NEW.valor < - c.limite from clientes c WHERE c.id = NEW.cliente_id) = TRUE THEN 
-                RAISE EXCEPTION 'Saldo e limite indisponivel para realizar transacao';
-            ELSE  UPDATE clientes SET saldo = saldo - NEW.valor WHERE id = NEW.cliente_id;
-            END IF;
-        END IF;
-        IF NEW.tipo = 'c' THEN
-            UPDATE 
-                clientes
-            SET 
-                saldo = saldo + NEW.valor
-            WHERE id = NEW.cliente_id;
-        END IF;
-        RETURN NEW;
-END;
-$updateClienteSaldoOnTransactionInsert$ LANGUAGE plpgsql;
-CREATE TRIGGER updateClienteSaldoOnTransactionInsert BEFORE
-INSERT ON transacoes FOR EACH ROW EXECUTE FUNCTION updateClienteSaldoOnTransactionInsert();
 
 INSERT INTO clientes (nome, limite)
 VALUES
@@ -44,3 +22,43 @@ VALUES
 ('les cruders', 10000 * 100),
 ('padaria joia de cocaia', 100000 * 100),
 ('kid mais', 5000 * 100);
+
+CREATE OR REPLACE FUNCTION criarTransacao(
+    in cliente_id INT,
+    in valor INT,
+    in tipo TIPO_TRANSACAO,
+    in descricao VARCHAR(10),
+    out res int,
+    out new_saldo int,
+    out limite int
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF NOT EXISTS (
+                SELECT
+                    c.saldo, c.limite
+                FROM clientes as c
+                WHERE c.id = cliente_id
+                FOR UPdATE
+            ) THEN
+        SELECT -1, 0, 0 INTO res, new_saldo, limite;
+        RETURN;
+    ELSE 
+        SELECT c.saldo, c.limite INTO new_saldo, limite FROM clientes as c WHERE c.id = cliente_id;
+    END IF;
+    IF tipo = 'd' THEN
+        IF new_saldo + limite < valor THEN 
+            SELECT -2, 0, 0 INTO res, new_saldo, limite;
+        ELSE 
+            UPDATE clientes SET saldo = saldo - valor WHERE id = cliente_id;
+            SELECT 0, c.saldo, c.limite INTO res, new_saldo, limite FROM clientes as c WHERE c.id = cliente_id;
+        END IF;
+    ELSE 
+        UPDATE clientes SET saldo = saldo + valor WHERE id = cliente_id;
+        SELECT 0, c.saldo, c.limite INTO res, new_saldo, limite FROM clientes as c WHERE c.id = cliente_id;
+    END IF;
+    INSERT INTO transacoes(cliente_id, valor, tipo, descricao) VALUES (cliente_id, valor, tipo, descricao);
+    RETURN;
+END;
+$$
